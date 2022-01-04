@@ -4,15 +4,48 @@
   <meta charset="utf-8">
   
   
-  <title>Hexo</title>
+  <title>k8s入门操作手册 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/index.html">
+  <meta name="description" content="本篇文章从一个go编写的无状态demo，梳理下k8s比较常用的操作内容。  文章内容结构：1.构建go编写的的docker镜像，包含一个healthZ健康检查的接口 （已更新） 2.编写deployment.yaml并部署（已更新） 3.更新deployment对象（已更新） 4.排障并回滚deployment对象（已更新） 5.简单缩放deployment对象（已更新） 6.metrics-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="k8s入门操作手册">
+<meta property="og:url" content="http://example.com/2022/01/04/k8s%E5%85%A5%E9%97%A8%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本篇文章从一个go编写的无状态demo，梳理下k8s比较常用的操作内容。  文章内容结构：1.构建go编写的的docker镜像，包含一个healthZ健康检查的接口 （已更新） 2.编写deployment.yaml并部署（已更新） 3.更新deployment对象（已更新） 4.排障并回滚deployment对象（已更新） 5.简单缩放deployment对象（已更新） 6.metrics-">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/955fb674952742d6947d4c8328754ac0~tplv-k3u1fbpfcp-zoom-crop-mark:1304:1304:1304:734.awebp">
+<meta property="og:image" content="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/bda7ecebb7ab474987b49076e0510212~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/33b200c816b6405ebeae39aaab9c31b5~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/97ec7b1e26d94ca0babda1010efb163b~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2a319022e37347f7a1c1f5bf9b30d6f3~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c9e61da2c85d407aaf73cb4030dd5496~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/413bc1b30a7741e2b356c314ee79bedd~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/67b6208fe0924a1c9bce7e6be15a1808~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/73819d490baf4cddaa1090a46b8edef7~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4846bb7a3b7745898d7632e44db9a0be~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/66668355935044148146c68dbd6fa6dd~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6b6b347a53c846fc9964a14dc4a90921~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5acacef9c7164a6b80fd679837fae590~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e52e0ce2117f4c24b9d5c2ca6720ff4c~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/58c464e9f87a4758aa8872ee92603952~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/bef56216205d4818a5011aba0503a92c~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/134b7d829b6b4014875301f21d91f944~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d638df5ac6264301b3d44a0b84208d46~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f706b64fb8df49b2bab1927eb6ef8102~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/defab9a68c844b759108628057b5b87d~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f4a06b9783ac45bc9f2dea6b9a64ac8f~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/41d9c801b07845d79acdf458af825981~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/53004a4e72d24e52a7f7732c0acd9263~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2221ba8e2aca42d5b7e2b8222bd78ba0~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/982e16e6fa234b988250059669710b15~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d2c1576647a349039d50273b661630be~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/fb907e802ce649b183572eb51dc2766e~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/fb208e5f3a2c478087a50fcb27e8f005~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="article:published_time" content="2022-01-04T09:25:31.000Z">
+<meta property="article:modified_time" content="2022-01-04T09:27:13.196Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/955fb674952742d6947d4c8328754ac0~tplv-k3u1fbpfcp-zoom-crop-mark:1304:1304:1304:734.awebp">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -69,9 +102,7 @@
 </header>
 
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-k8s入门操作手册" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-k8s入门操作手册" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/01/04/k8s%E5%85%A5%E9%97%A8%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" class="article-date">
   <time class="dt-published" datetime="2022-01-04T09:25:31.000Z" itemprop="datePublished">2022-01-04</time>
@@ -84,8 +115,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/01/04/k8s%E5%85%A5%E9%97%A8%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/">k8s入门操作手册</a>
+    <h1 class="p-name article-title" itemprop="headline name">
+      k8s入门操作手册
     </h1>
   
 
@@ -584,113 +615,19 @@ spec:  containers:
     </footer>
   </div>
   
-</article>
-
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-first-post" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/01/04/first-post/" class="article-date">
-  <time class="dt-published" datetime="2022-01-04T08:47:47.000Z" itemprop="datePublished">2022-01-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/01/04/first-post/">first post</a>
-    </h1>
+    <a href="/2022/01/04/first-post/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">first post</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/01/04/first-post/" data-id="ckxzwrcx90001bsfneusr6yb0" data-title="first post" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
   
 </article>
-
-
-
-  
-    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/01/04/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2022-01-04T08:19:37.776Z" itemprop="datePublished">2022-01-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/01/04/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/01/04/hello-world/" data-id="ckxzus0yx0000jofn7n97d51f" data-title="Hello World" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
 </section>
